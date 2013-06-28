@@ -60,7 +60,7 @@ function Router (options) {
 		setTimeout(_.bind(function () {
 
 			//	add pushstate stuff
-			if (win.addEventListener) win.addEventListener('popstate', _.bind(function () { console.log('asd') }, this), false);
+			if (win.addEventListener) win.addEventListener('popstate', _.bind(this.check, this), false);
 			else if (win.attachEvent)	win.attachEvent('onpopstate', _.bind(this.check, this));
 			else this._timer = win.setInterval(_.bind(this.check, this), interval);
 		}, this), 100);
