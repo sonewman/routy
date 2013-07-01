@@ -1,0 +1,10 @@
+{
+  "name": "Routy",
+  "dependencies": {
+    "underscore": "~1.4.4",
+    "inherits": "~2.0.0"
+  },
+  "devDependencies": {
+    "tape": "~1.0.4"
+  }
+}
