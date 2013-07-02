@@ -130,7 +130,7 @@ function getUri (root, uri) {
   if (!hasPushState) return;
   uri = uri || loc.pathname;
   root = root.replace(trailingSlash, '');
-  if (uri.indexOf(root) === 0) uri = uri.substr(root.length);
+  if (uri.indexOf(root) !== 0) uri = uri.substr(root.length);
   return uri.replace(stripHashSlash, '');
 }
 
@@ -160,6 +160,7 @@ BrowserRouty.prototype.moveTo = function (uri, options) {
 
   if (this.pushState) {
     uri = uri.replace(stripHashSlash, '');
+    if (uri[0] !== '/') uri = '/' + uri;
     hist[(!replace ? 'pushState' : 'replaceState')](options.data || {}, doc.title, uri);
     this.load(uri);
   } else if (this.hashChange) {

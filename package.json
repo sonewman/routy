@@ -5,6 +5,7 @@
     "inherits": "~2.0.0"
   },
   "devDependencies": {
-    "tape": "~1.0.4"
+    "tape": "~1.0.4",
+    "ecstatic": "~0.4.5"
   }
 }

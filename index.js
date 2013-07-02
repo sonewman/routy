@@ -4,9 +4,6 @@ module.exports = Routy;
 //  core module includes
 var _ = require('underscore')
 
-  , BrowserRouty = require('./client-side').BrowserRouty
-  // , ServerRouty = require('./server-side').ServerRouty
-
   //  is the browser or node ?
   , isBrowser = false, isNode = false
 
@@ -14,6 +11,7 @@ var _ = require('underscore')
 
   , leadingTrailingSlash = /^\/+|\/+\s*$/g
   , escapeRegExp = /[\-{}\[\]+?.,\\\^$|#\s]/g
+  , optionalLeadingSlash = /^(\/?)/
   , optionalMatch = /\((.*?)\)/g
   , symbolMatch = /(\(\?)?:\w+/g
   , splatMatch = /\*[^\?|\/]*/g
@@ -32,19 +30,17 @@ var _ = require('underscore')
 
 //  determine environment browser or node
 try {
+  browser = new require('./client-side').BrowserRouty
   isBrowser = !!window;
 } catch (err1) {
   try {
+    //browser = require('./server-side').ServerRouty
     isNode = !!process;
   } catch (err2) {
     throw new Error('Sorry Routy can only currently run '
                     + 'in the Browser or Node.js');
   }
 }
-
-//  if browser create browerRouty
-if (isBrowser) router = new BrowserRouty;
-//  else if (isNode) rouer = new NodeRouty;
 
 //  router high-level abstraction
 
@@ -60,6 +56,9 @@ function Routy (arg1, arg2, arg3) {
       return Routy.route(arg1, arg2,(arg3 || null));
     } else if (_.isObject(arg1) && _.isObject(arg2)) {
       //  do node stuff
+      console.log(arg1, arg2)
+      if (_.isString(arg1.url)) return;
+      respond(arg1)
     }
 
   }
@@ -72,8 +71,7 @@ Routy.listen = function (options) {
 
   router.on('load', respond);
 
-  if (isBrowser) router.init(options);
-  // else if (isNode) router = new ServerRouty
+  router.init(options);
 
   _listening = true;
 };
@@ -94,22 +92,23 @@ Routy.route = function (uri, cb, ctx, once) {
 
 //  this function was borrowed from backbone
 function routeToRegExp (uri) {
-  uri = uri.replace(leadingTrailingSlash, '')
-           .replace(escapeRegExp, '\\$&')
+  uri = uri.replace(escapeRegExp, '\\$&')
+           .replace(optionalLeadingSlash, '(\\/?)')
            .replace(optionalMatch, '(?:$1)?')
            .replace(symbolMatch, function(match, optional){
             return optional ? match : '([^\/]+)';
            })
            .replace(splatMatch, '(.*?)');
-           console.log(uri)
+
   return new RegExp('^' + uri + '$');
 }
 
 //  respond to load event of router
 function respond (uri, first) {
-  console.log(uri)
+  uri = uri.replace(leadingTrailingSlash, '');
+
   function test (route, i, routes) {
-    handle(route, uri, i);
+    return handle(route, uri, i);
   }
 
   if (first) _.some(routes, test);  
@@ -119,8 +118,9 @@ function respond (uri, first) {
 //  handle the route and uri with optional array index
 function handle (route, uri, i) {
   var params, match = route.uri;
-  uri = uri.replace(leadingTrailingSlash, '');
+  //console.log(match, uri);
   if (!match.test(uri)) return false;
+  //console.log(match, uri);
   params = getParams(match, uri);
   route.cb.call(route.ctx, params);
   if (route.once && i !== void 0) routes.splice(i, 1);
@@ -166,3 +166,8 @@ Routy.off = function (name, cb) {
 Routy.emit = function (name) {
   if (router) router.emit.apply(router, arguments);
 };
+
+Routy.destroy = function () {
+  Routy.stop();
+  routes = [];
+}
