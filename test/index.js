@@ -24,22 +24,26 @@ var test = require('tape')
 	}
 ;
 
-test('Routy()', function (t) {
+var stream = require('stream').Readable;
 
-	t.test('passing a string and a callback', function (t) {
-		var cb = sinon.spy()
-			, http = Object.create(httpMock);
+console.log(stream)
 
-		routy('/test', cb);
+// test('Routy()', function (t) {
 
-		http.createServer(routy).listen(5000);
+// 	t.test('passing a string and a callback', function (t) {
+// 		var cb = sinon.spy()
+// 			, http = Object.create(httpMock);
 
-		http.visit('/test');
+// 		routy('/test', cb);
 
-		t.assert(cb.called, 'callback should be called');
-		t.end();
-	});
+// 		http.createServer(routy).listen(5000);
 
-	t.end();
+// 		http.visit('/test');
 
-});
+// 		t.assert(cb.called, 'callback should be called');
+// 		t.end();
+// 	});
+
+// 	t.end();
+
+// });

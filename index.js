@@ -4,6 +4,10 @@ module.exports = Routy;
 //  core module includes
 var _ = require('underscore')
 
+  //, BrowserRouty = require('./client-side').BrowserRouty
+  // , ServerRouty = require('./server-side').ServerRouty
+  , Router
+
   //  is the browser or node ?
   , isBrowser = false, isNode = false
 
@@ -30,11 +34,11 @@ var _ = require('underscore')
 
 //  determine environment browser or node
 try {
-  browser = new require('./client-side').BrowserRouty
-  isBrowser = !!window;
+  if (isBrowser = !!window) {
+    Router = require('./client-side').BrowserRouty;
+  }
 } catch (err1) {
   try {
-    //browser = require('./server-side').ServerRouty
     isNode = !!process;
   } catch (err2) {
     throw new Error('Sorry Routy can only currently run '
@@ -42,6 +46,7 @@ try {
   }
 }
 
+if (Router) router = new Router;
 //  router high-level abstraction
 
 function Routy (arg1, arg2, arg3) {
@@ -56,9 +61,6 @@ function Routy (arg1, arg2, arg3) {
       return Routy.route(arg1, arg2,(arg3 || null));
     } else if (_.isObject(arg1) && _.isObject(arg2)) {
       //  do node stuff
-      console.log(arg1, arg2)
-      if (_.isString(arg1.url)) return;
-      respond(arg1)
     }
 
   }
@@ -71,12 +73,12 @@ Routy.listen = function (options) {
 
   router.on('load', respond);
 
-  router.init(options);
+  if (router) router.init(options);
 
   _listening = true;
 };
 
-//  add new route
+//  add a new route
 Routy.route = function (uri, cb, ctx, once) {
   var route, current = false;
   if (!_.isRegExp(uri)) uri = routeToRegExp(uri);
@@ -104,11 +106,10 @@ function routeToRegExp (uri) {
 }
 
 //  respond to load event of router
-function respond (uri, first) {
-  uri = uri.replace(leadingTrailingSlash, '');
+function respond (args, first) {
 
   function test (route, i, routes) {
-    return handle(route, uri, i);
+    return handle(route, args, i);
   }
 
   if (first) _.some(routes, test);  
@@ -116,11 +117,12 @@ function respond (uri, first) {
 }
 
 //  handle the route and uri with optional array index
-function handle (route, uri, i) {
+function handle (route, args, i) {
   var params, match = route.uri;
-  //console.log(match, uri);
+  var uri = args//.req.url;
+  uri = uri.replace(leadingTrailingSlash, '');
+
   if (!match.test(uri)) return false;
-  //console.log(match, uri);
   params = getParams(match, uri);
   route.cb.call(route.ctx, params);
   if (route.once && i !== void 0) routes.splice(i, 1);
@@ -166,8 +168,3 @@ Routy.off = function (name, cb) {
 Routy.emit = function (name) {
   if (router) router.emit.apply(router, arguments);
 };
-
-Routy.destroy = function () {
-  Routy.stop();
-  routes = [];
-}

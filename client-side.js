@@ -39,7 +39,6 @@ var inherits = require('inherits')
   }
 ;
 
-
 //  Main class constructor
 function BrowserRouty (options, init) {
   EventEmitter.call(this);
@@ -66,6 +65,8 @@ BrowserRouty.prototype.init = function (options) {
 
   //  Add Events
 
+  this._onEvent = _.bind(this.load, this, null);
+
   //  if pushState is available and we would like to
   //  use pushState
   if (pushState) {
@@ -73,14 +74,14 @@ BrowserRouty.prototype.init = function (options) {
     //  fires popstate on arrival
     setTimeout(_.bind(function () {
       //  add popState listener
-      addEvent(win, 'popstate', _.bind(this.load, this, null));
+      addEvent(win, 'popstate', this._onEvent);
     }, this), 200);
 
   //  if we would like to use hashchange fallback or default
   } else if (hashChange) {
     //  is event supported, if not use timer
-    if (!hasHashChange) this._timer = win.setInterval(_.bind(this.load, this), interval);
-    else addEvent(win, 'hashchange', _.bind(this.load, this, null));
+    if (!hasHashChange) this._timer = win.setInterval(this._onEvent, interval);
+    else addEvent(win, 'hashchange', this._onEvent);
 
   } else {
     //  Do nothing
@@ -143,6 +144,8 @@ BrowserRouty.prototype.current = function () {
 
 //  handler for events
 BrowserRouty.prototype.load = function (uri) {
+
+
   this.emit('load', (uri || this.current()));
 };
 
@@ -223,12 +226,12 @@ BrowserRouty.prototype.stop = function () {
 
   if (this.pushState) {
 
-    removeEvent(win, 'popstate', _.bind(this.load, this, null));
+    removeEvent(win, 'popstate', this._onEvent);
 
   } else if (this.hashchange) {
 
     if (!hasHashChange) win.clearInterval(this._timer);
-    else removeEvent(win, 'hashchange', _.bind(this.load, this, null));
+    else removeEvent(win, 'hashchange', this._onEvent);
   }
 };
 
