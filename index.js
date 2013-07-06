@@ -4,15 +4,12 @@ module.exports = Routy;
 //  core module includes
 var _ = require('underscore')
 
-  //, BrowserRouty = require('./client-side').BrowserRouty
-  // , ServerRouty = require('./server-side').ServerRouty
-  , Router
+  , Router, router
 
   //  is the browser or node ?
   , isBrowser = false, isNode = false
 
   //  regexp
-
   , leadingTrailingSlash = /^\/+|\/+\s*$/g
   , escapeRegExp = /[\-{}\[\]+?.,\\\^$|#\s]/g
   , optionalLeadingSlash = /^(\/?)/
@@ -28,22 +25,21 @@ var _ = require('underscore')
   , settings = {}
   , routes = []
   , _listening = false
-
-  , router
 ;
 
 //  determine environment browser or node
 try {
-  if (isBrowser = !!window) {
-    Router = require('./client-side').BrowserRouty;
+  if (typeof window !== 'undefined') {
+    isBrowser = true;
+    Router = require('./browser-routy').BrowserRouty;
+  } else if (typeof process !== 'undefined' 
+    && typeof module !== 'undefined' 
+    && typeof module.exports !== 'undefined') {
+    isNode = true;
   }
 } catch (err1) {
-  try {
-    isNode = !!process;
-  } catch (err2) {
     throw new Error('Sorry Routy can only currently run '
                     + 'in the Browser or Node.js');
-  }
 }
 
 if (Router) router = new Router;
@@ -64,6 +60,11 @@ function Routy (arg1, arg2, arg3) {
     }
 
   }
+}
+
+if (Router && router) {
+  Routy.Router = Router;
+  Routy.router = router;
 }
 
 //  this function starts the clientside router

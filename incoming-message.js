@@ -3,16 +3,29 @@ module.exports = exports = IncomingMessage;
 //	object passed in http.createServer
 
 var Stream = require('stream')
-
+	, win = window, doc = document, loc = location
+	, nav = navigator
 ;
 
 //	IncomingMessage needs to be a Readable stream
 
-function IncomingMessage () {
+function IncomingMessage (options) {
 	if (!(this instanceof IncomingMessage)) 
 		return new IncomingMessage(options);
 
 	Stream.call(this);
+
+	this.url = options.url;
+	//	set node like headers
+	this.headers = getHeader();
 }
 
 inherits(IncomingMessage, Stream);
+
+
+function getHeader () {
+	return {
+		'user-agent' : nav.userAgent
+		, host : loc.host
+	}
+}
