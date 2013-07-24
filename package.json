@@ -3,10 +3,10 @@
   "dependencies": {
     "underscore": "~1.4.4",
     "inherits": "~2.0.0",
-    "mimetype": "0.0.5"
+    "mimetype": "0.0.5",
+    "ecstatic": "~0.4.5"
   },
   "devDependencies": {
-    "tape": "~1.0.4",
-    "ecstatic": "~0.4.5"
+    "tape": "~1.0.4"
   }
 }
